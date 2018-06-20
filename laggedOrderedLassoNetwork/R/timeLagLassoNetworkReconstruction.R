@@ -276,7 +276,7 @@ timeLaggedOrderedLassoNetwork <- function(exprDataList,
 	rm(rescaledList, transformedList)
 
 	if(length(lambda)==1){
-		lambda <- matrix(lambda, ncol(yData), ncol(yData))
+		lambda <- matrix(lambda, p, p)
 	}
 
 	##########
@@ -287,11 +287,72 @@ timeLaggedOrderedLassoNetwork <- function(exprDataList,
 		maxiter=maxiter, inneriter=inneriter, iter.gg=iter.gg,
 		cores=cores)
 
-	print(coefficientsByLag)
-
 	##########
 
 	#compute adj. matrix
 	.convertCoefficientsToAdjMatrix(coefficientsByLag, maxLag) #or replace maxLag with 1 because of the monotonicity constraint
 
+}
+
+
+
+#combining everything together:
+#' @title timeLaggedOrderedLassoSemiSupervisedNetwork
+#' @description Predicts a posterior gene regulatory network from a prior network and expression data based on the time-lagged ordered lasso.
+#' @param exprDataList list of expression datasets (timepoints x genes) for p genes
+#' @param adjMatrix prior network adjacency matrix
+#' @param output expression output type ('expr' or 'change expr.')
+#' @param maxLag maximum predictor lag
+#' @param lambdaEdge a scalar edge penalization parameter.
+#' @param lambdaNonEdge a scalar non-edge penalization parameter.
+#' @param self if \code{TRUE}, include loops in time-lagged regression models
+#' @param method underlying ordered lasso optimization method ('Solve.QP' or 'GG')
+#' @param strongly.ordered if \code{TRUE} (\code{FALSE}), use the strongly (weakly) ordered lasso
+#' @param rescale if \code{TRUE}, rescale input exprssion data
+#' @param rescaleSeparately if \code{TRUE}, rescale each dataset separately
+#' @param maxiter maximum number of  time lagged ordered lasso iterations
+#' @param inneriter maximum number ordered lasso iterations
+#' @param iter.gg maximum number of generalized gradient iterations
+#' @param cores number of parallel cores
+#' @return a predicted adjacency matrix
+#' @export
+timeLaggedOrderedLassoSemiSupervisedNetwork <- function(exprDataList,
+	adjMatrix, 
+	output='expr.', maxLag=2, lambdaEdge=1, lambdaNonEdge=1, 
+	self=TRUE,
+	method='Solve.QP', strongly.ordered=FALSE,
+	rescale=TRUE, rescaleSeparately=FALSE, 
+	maxiter=500, inneriter=100, iter.gg=100,
+	cores=1){
+
+	p <- ncol(exprDataList[[1]])
+	genes <- colnames(exprDataList[[1]])
+
+	#checking inputs:
+
+	if(!is.numeric(lambdaEdge) && !is.integer(lambdaEdge)){
+		stop('lambda: must be of class numeric or integer')
+	} else if(length(lambdaEdge) != 1){
+		stop('lambda: must be a scalar')
+	}
+
+	if(!is.numeric(lambdaNonEdge) && !is.integer(lambdaNonEdge)){
+		stop('lambda: must be of class numeric or integer')
+	} else if(length(lambdaEdge) != 1){
+		stop('lambda: must be a scalar')
+	}
+
+	if(!all(dim(adjMatrix) == c(p, p))){
+		stop('adjMatrix: must be a p x p adjacency matrix')
+	}
+	adjMatrix <- adjMatrix[genes, genes]
+
+	lambda <- adjMatrix * lambdaEdge + (adjMatrix == 0) * lambdaNonEdge
+
+	timeLaggedOrderedLassoNetwork(exprDataList,
+		output=output, maxLag=maxLag, lambda=lambda, self=self,
+		method=method, strongly.ordered=strongly.ordered,
+		rescale=rescale, rescaleSeparately=rescaleSeparately, 
+		maxiter=maxiter, inneriter=inneriter, iter.gg=iter.gg,
+		cores=cores)
 }

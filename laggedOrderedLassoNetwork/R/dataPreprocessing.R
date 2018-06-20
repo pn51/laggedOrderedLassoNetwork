@@ -10,7 +10,9 @@
 	# given a list of datasets, combine
 	# and rescale each row to mean 0, sd 1
 	# and separate
+	genes <- colnames(datasets[[1]])
 	if(is.list(datasets)){
+		datasets <- lapply(datasets, function(ii){ii[,genes]})
 		allData <- do.call(rbind, datasets) #assuming genes x time
 		samples <- sapply(datasets, nrow)
 		samples <- rep(seq_along(samples), samples)
