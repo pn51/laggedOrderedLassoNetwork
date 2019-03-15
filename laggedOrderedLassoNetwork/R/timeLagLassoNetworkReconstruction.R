@@ -220,22 +220,27 @@ timeLaggedOrderedLassoNetwork <- function(exprDataList,
 		stop('lambda: must be a scalar or p x p matrix')
 	}
 
-	if(!is.numeric(maxLag) && !is.integer(maxLag) && maxLag < 1){
-		stop('lambda: must be a scalar greater than or equal to 1')
+	if(!is.numeric(maxLag) || maxLag < 1){
+		stop('maxLag: must be a scalar greater than or equal to 1')
 	} else if(floor(maxLag) < maxLag){
 		warning('maxLag: rounding down to an integer')
+		maxLag <- floor(maxLag)
 	}
 
 	if(!is.logical(strongly.ordered)){
 		warning('strongly.ordered: must be a logical; using FALSE')
+		strongly.ordered <- FALSE
 	}
 
 	if(!is.logical(rescale)){
 		warning('rescale: must be a logical; using TRUE')
+		rescale <- TRUE
+
 	}
 
 	if(!is.logical(rescaleSeparately)){
-		warning('rescale: must be a logical; using FALSE')
+		warning('rescaleSeparately: must be a logical; using FALSE')
+		rescaleSeparately <- FALSE
 	}
 
 	if(!is.numeric(maxiter) && !is.integer(maxiter)){
