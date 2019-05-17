@@ -93,7 +93,7 @@
 		g0 <- 1
 		g1 <- 0
 
-		while(g0 > g1){
+		while(g0 > g1 && t > epsilon){
 		  b <- .prox(alpha - t * const, t * lambda)
 		  residualb <- drop(y - x %*% b)
 		  g0 <- drop(crossprod(residualb)) / 2
@@ -240,9 +240,9 @@
 				beta_neg_old <- beta_neg
 
 				r <- y + x %*% beta_neg
-				beta_pos <- .fastgg(x, r, beta_pos, lambda=lambda, inneriter.gg=iter.gg)
+				beta_pos <- .fastgg(x, r, beta_pos, lambda=lambda, inneriter.gg=iter.gg, epsilon=epsilon)
 				r <- y - x %*% beta_pos
-				beta_neg <- .fastgg(-x, r, beta_neg, lambda=lambda, inneriter.gg=iter.gg)
+				beta_neg <- .fastgg(-x, r, beta_neg, lambda=lambda, inneriter.gg=iter.gg, epsilon=epsilon)
 
 				go <- sum(abs(beta_pos_old-beta_pos)) > epsilon | sum(abs(beta_neg_old - beta_neg)) > epsilon
 			}
