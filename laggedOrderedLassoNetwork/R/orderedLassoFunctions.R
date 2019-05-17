@@ -390,6 +390,7 @@
 			ordered.test <- FALSE
 		} else if(any(beta.diff < -1e-5)){
 			ordered.test <- TRUE
+			break
 		} else{
 			ordered.test <- FALSE
 		}
